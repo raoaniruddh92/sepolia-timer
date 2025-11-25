@@ -8,7 +8,7 @@ import logo from './logo.svg';
 
 // --- CONFIGURATION ---
 const INFURA_ID = 'e58130da3dee4d6c9f1ab1df59cbe8aa';
-const CONTRACT_ADDRESS = "0x1ea134c88fa565c2A8EB13dAa0fE5A7d5e625362";
+const CONTRACT_ADDRESS = "0x6d8d680794D3400BDeeb450f61180Ff58dd4fb7A";
 const SEPOLIA_CHAIN_ID = 11155111;
 const ABI = [
   "function time() view returns (uint256)"
