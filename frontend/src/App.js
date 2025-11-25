@@ -6,13 +6,20 @@ import { ethers } from "ethers";
 
 import logo from './logo.svg';
 
+// --- CONFIGURATION ---
 const INFURA_ID = 'e58130da3dee4d6c9f1ab1df59cbe8aa';
+const CONTRACT_ADDRESS = "0x1ea134c88fa565c2A8EB13dAa0fE5A7d5e625362";
+const SEPOLIA_CHAIN_ID = 11155111;
+const ABI = [
+  "function time() view returns (uint256)"
+];
+
 
 const chains = [
   {
-    id: 11155111,
+    id: `0x${SEPOLIA_CHAIN_ID.toString(16)}`, // Sepolia Chain ID in Hex
     token: 'ETH',
-    label: 'Sepolia',
+    label: 'Sepolia Testnet',
     rpcUrl: `https://sepolia.infura.io/v3/${INFURA_ID}`
   }
 ];
@@ -37,15 +44,11 @@ const onboard = Onboard({
   },
   connect: { autoConnectLastWallet: true }
 });
+// --- END CONFIGURATION ---
 
 function App() {
   const [wallet, setWallet] = useState(null);
-  const [countdown, setCountdown] = useState(null);
-
-  const contractAddress = "0x1ea134c88fa565c2A8EB13dAa0fE5A7d5e625362";
-  const abi = [
-    "function time() view returns (uint256)"
-  ];
+  const [countdown, setCountdown] = useState({ hours: 0, minutes: 0, seconds: 0, loading: true });
 
   const connect = async () => {
     const wallets = await onboard.connectWallet();
@@ -53,11 +56,19 @@ function App() {
     if (wallets[0]) {
       setWallet(wallets[0]);
       try {
-        const SEPOLIA_CHAIN_ID_HEX = '0xaa36a7'; 
+        const SEPOLIA_CHAIN_ID_HEX = `0x${SEPOLIA_CHAIN_ID.toString(16)}`; 
         await onboard.setChain({ chainId: SEPOLIA_CHAIN_ID_HEX });
       } catch (error) {
         console.error("Failed to switch chain to Sepolia:", error);
       }
+    }
+  };
+
+  const disconnect = async () => {
+    if (wallet) {
+      await onboard.disconnectWallet({ label: wallet.label });
+      setWallet(null);
+      setCountdown({ hours: 0, minutes: 0, seconds: 0, loading: true });
     }
   };
 
@@ -66,76 +77,119 @@ function App() {
     const subscription = onboard.state.select('wallets').subscribe((wallets) => {
       setWallet(wallets[0] || null);
     });
-
     return () => subscription.unsubscribe();
   }, []);
 
   // Start countdown when wallet connects
   useEffect(() => {
-    if (!wallet) return;
+    if (!wallet || !window.ethereum) {
+        setCountdown({ hours: 0, minutes: 0, seconds: 0, loading: false });
+        return;
+    }
+    
+    let intervalId;
 
     async function loadCountdown() {
       try {
         const provider = new ethers.BrowserProvider(window.ethereum);
-        const contract = new ethers.Contract(contractAddress, abi, provider);
+        const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
 
         const startTime = await contract.time();   // blockchain timestamp
 
-        const duration = 300; // countdown duration (1 hour)
-        const endTime = Number(startTime) + duration;
-
-        const interval = setInterval(() => {
+        intervalId = setInterval(() => {
           const now = Math.floor(Date.now() / 1000);
-          const remaining = endTime - now;
+          const remainingTime = now - Number(startTime);
+          
+          const hours = Math.floor(remainingTime / 3600);
+          const minutes = Math.floor((remainingTime % 3600) / 60);
+          const seconds = remainingTime % 60;
 
-          if (remaining <= 0) {
-            setCountdown("TIME IS UP!");
-            clearInterval(interval);
-            return;
-          }
-
-          const hours = Math.floor(remaining / 3600);
-          const minutes = Math.floor((remaining % 3600) / 60);
-          const seconds = remaining % 60;
-
-          setCountdown(`${hours}h ${minutes}m ${seconds}s`);
+          setCountdown({ 
+              hours: hours, 
+              minutes: minutes, 
+              seconds: seconds, 
+              loading: false 
+          });
         }, 1000);
 
       } catch (error) {
         console.error("Error loading countdown:", error);
+        setCountdown({ hours: 0, minutes: 0, seconds: 0, loading: false });
       }
     }
 
     loadCountdown();
+
+    return () => {
+        if (intervalId) clearInterval(intervalId);
+    };
   }, [wallet]);
+
+  // Helper function for formatting time (e.g., 5 -> 05)
+  const formatTime = (time) => String(time).padStart(2, '0');
 
   return (
     <div className="app-container">
       
-      <div className="header">
-        <h1>Smart Contract Demo</h1>
-        <p className="subtitle">Deploy & interact with a simple blockchain contract</p>
-      </div>
+      <header className="header">
+        <h1 className="title">🚀 Smart Contract Timer Demo</h1>
+        <p className="subtitle">Time elapsed since contract deployment on Sepolia</p>
+      </header>
+      
+      <main className="content-area">
 
-      {!wallet ? (
-        <button className="primary-btn" onClick={connect}>
-          Connect Wallet
-        </button>
-      ) : (
-        <div className="card">
-          <p className="wallet-status">✔ Wallet Connected</p>
-        </div>
-      )}
+        {/* Wallet Status and Connection Card */}
+        <section className="card wallet-card">
+          {!wallet ? (
+            <div className="connect-state">
+                <p className="status-text">Wallet is **Disconnected**</p>
+                <button className="primary-btn" onClick={connect}>
+                    Connect Wallet
+                </button>
+            </div>
+          ) : (
+            <div className="connected-state">
+                <p className="status-text success">✅ Wallet Connected</p>
+                <p className="address-text">
+                    **Account:** {wallet.accounts[0].address.substring(0, 6)}...{wallet.accounts[0].address.substring(38)}
+                </p>
+                <p className="chain-text">
+                    **Chain:** Sepolia
+                </p>
+                <button className="secondary-btn" onClick={disconnect}>
+                    Disconnect
+                </button>
+            </div>
+          )}
+        </section>
 
-      {/* Countdown Display */}
-      {wallet && (
-        <div className="card">
-          <h2>Countdown Timer</h2>
-          <p style={{ fontSize: "24px", fontWeight: "bold" }}>
-            {countdown || "Loading..."}
-          </p>
-        </div>
-      )}
+        {/* Countdown Display Card */}
+        {wallet && (
+            <section className="card countdown-card">
+                <h2>Time Elapsed</h2>
+                {countdown.loading ? (
+                    <p className="loading-text">Loading contract time...</p>
+                ) : (
+                    <div className="countdown-display">
+                        <div className="time-unit">
+                            <span className="time-value">{formatTime(countdown.hours)}</span>
+                            <span className="time-label">Hours</span>
+                        </div>
+                        <span className="separator">:</span>
+                        <div className="time-unit">
+                            <span className="time-value">{formatTime(countdown.minutes)}</span>
+                            <span className="time-label">Minutes</span>
+                        </div>
+                        <span className="separator">:</span>
+                        <div className="time-unit">
+                            <span className="time-value">{formatTime(countdown.seconds)}</span>
+                            <span className="time-label">Seconds</span>
+                        </div>
+                    </div>
+                )}
+            </section>
+        )}
+      </main>
 
     </div>
   );

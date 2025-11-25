@@ -1,38 +1,207 @@
-.App {
-  text-align: center;
+/* General Setup and Typography */
+:root {
+  --primary-color: #3f51b5; /* Indigo */
+  --secondary-color: #f50057; /* Pink */
+  --background-color: #f4f6f8; /* Light off-white background */
+  --card-bg: #ffffff;
+  --text-color: #333333;
+  --success-color: #4caf50;
+  --danger-color: #f44336;
+  --border-radius: 12px;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+body {
+  font-family: 'Inter', sans-serif; /* Use a modern font, ensure it's available or imported */
+  background-color: var(--background-color);
+  color: var(--text-color);
+  line-height: 1.6;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+/* App Container and Layout */
+.app-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+  padding: 40px 20px;
+  min-height: 100vh;
+}
+
+/* Header Styling */
+.header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.title {
+  font-size: 2.5em;
+  color: var(--primary-color);
+  margin-bottom: 10px;
+}
+
+.subtitle {
+  font-size: 1.1em;
+  color: #666666;
+}
+
+/* Main Content Area */
+.content-area {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+    max-width: 500px;
+}
+
+/* Card Styling */
+.card {
+  background-color: var(--card-bg);
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  padding: 25px;
+  text-align: center;
+}
+
+/* Button Styling */
+.primary-btn, .secondary-btn {
+  padding: 12px 25px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1em;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.1s;
+  font-weight: 600;
+  width: 100%;
+  margin-top: 15px; /* Added spacing */
+}
+
+.primary-btn {
+  background-color: var(--primary-color);
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
+.primary-btn:hover {
+  background-color: #303f9f; /* Darker shade */
+  transform: translateY(-1px);
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.secondary-btn {
+    background-color: #e0e0e0; /* Light gray */
+    color: var(--text-color);
+    margin-top: 10px;
+}
+
+.secondary-btn:hover {
+    background-color: #cccccc;
+    transform: translateY(-1px);
+}
+
+
+/* Wallet Card Specifics */
+.wallet-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.connect-state .status-text {
+    font-size: 1.1em;
+    font-weight: 500;
+    margin-bottom: 10px;
+}
+
+.connected-state {
+    width: 100%;
+}
+
+.status-text.success {
+    color: var(--success-color);
+    font-size: 1.2em;
+    font-weight: 700;
+    margin-bottom: 15px;
+}
+
+.address-text, .chain-text {
+    font-size: 0.95em;
+    text-align: left;
+    background-color: #f9f9f9;
+    padding: 8px 15px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    border: 1px solid #eeeeee;
+}
+
+.address-text strong, .chain-text strong {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+
+/* Countdown Card Specifics */
+.countdown-card h2 {
+    color: var(--primary-color);
+    margin-bottom: 20px;
+    font-size: 1.5em;
+}
+
+.loading-text {
+    color: #999;
+    font-size: 1.2em;
+}
+
+.countdown-display {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.time-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.time-value {
+  font-size: 3.5em; /* Large numbers */
+  font-weight: 700;
+  color: var(--text-color);
+  background-color: #e8eaf6; /* Light background for numbers */
+  padding: 10px 15px;
+  border-radius: 8px;
+  min-width: 80px;
+}
+
+.time-label {
+  font-size: 0.85em;
+  color: #777;
+  text-transform: uppercase;
+  margin-top: 5px;
+  font-weight: 600;
+}
+
+.separator {
+  font-size: 3em;
+  color: var(--primary-color);
+  font-weight: 300;
+}
+
+/* Ensure the app is centered and looks good on smaller screens */
+@media (max-width: 600px) {
+    .title {
+        font-size: 2em;
+    }
+    .time-value {
+        font-size: 2.5em;
+        min-width: 60px;
+        padding: 8px 12px;
+    }
+    .separator {
+        font-size: 2em;
+    }
 }
