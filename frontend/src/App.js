@@ -40,6 +40,7 @@ const onboard = Onboard({
     description: 'Web3-Onboard Demo Application',
     recommendedInjectedWallets: [
       { name: 'MetaMask', url: 'https://metamask.io' }
+      
     ]
   },
   connect: { autoConnectLastWallet: true },
